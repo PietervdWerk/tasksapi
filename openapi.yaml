@@ -1,0 +1,252 @@
+openapi: 3.0.0
+info:
+    title: Task Management API
+    version: 1.0.0
+paths:
+    /token:
+        post:
+            summary: Get an access token
+            tags:
+                - Authentication
+            parameters:
+                - in: header
+                  name: Authorization
+                  schema:
+                      type: string
+                  required: true
+                  description: Basic Auth header with client_id and client_secret
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - grant_type
+                            properties:
+                                grant_type:
+                                    type: string
+                                    enum: [client_credentials]
+                                    description: Tells the token endpoint to perform the Client Credentials flow
+                                scope:
+                                    type: string
+                                    description: Space separated string of scopes the client is requesting access to
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - access_token
+                                    - expires_in
+                                    - token_type
+                                properties:
+                                    access_token:
+                                        type: string
+                                        description: A newly issued access token for the flow
+                                    expires_in:
+                                        type: integer
+                                        description: The time to live of the access token in seconds
+                                    scope:
+                                        type: string
+                                        description: Space separated string of issued scopes. If not present, the requested scopes were issued. If present, the issued scopes may differ from the requested scopes.
+                                    token_type:
+                                        $ref: "#/components/schemas/TokenType"
+                                        description: Describes how the token can be used. Most commonly bearer token usage.
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "401":
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+    /tasks:
+        post:
+            summary: Create a new task
+            tags:
+                - Tasks
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateOrUpdateTaskRequest"
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Task"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        get:
+            summary: List all tasks
+            tags:
+                - Tasks
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Task"
+    /tasks/{taskId}:
+        get:
+            summary: Get a task by ID
+            tags:
+                - Tasks
+            parameters:
+                - $ref: "#/components/parameters/taskId"
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Task"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "404":
+                    description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+
+        put:
+            summary: Update a task
+            tags:
+                - Tasks
+            parameters:
+                - $ref: "#/components/parameters/taskId"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateOrUpdateTaskRequest"
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Task"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "404":
+                    description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+
+        delete:
+            summary: Delete a task
+            tags:
+                - Tasks
+            parameters:
+                - $ref: "#/components/parameters/taskId"
+            responses:
+                "204":
+                    description: Successful response
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "404":
+                    description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+
+components:
+    parameters:
+        taskId:
+            in: path
+            name: taskId
+            required: true
+            schema:
+                type: string
+                format: uuid
+    schemas:
+        Error:
+            type: object
+            required:
+                - message
+            properties:
+                message:
+                    type: string
+        Task:
+            type: object
+            required:
+                - id
+                - title
+                - description
+                - status
+                - createdAt
+                - updatedAt
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    x-go-name: ID
+                title:
+                    type: string
+                description:
+                    type: string
+                status:
+                    $ref: "#/components/schemas/TaskStatus"
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+        TaskStatus:
+            type: string
+            enum: [pending, completed]
+        TokenType:
+            type: string
+            enum: [Bearer]
+        CreateOrUpdateTaskRequest:
+            type: object
+            required:
+                - title
+                - description
+                - status
+            properties:
+                title:
+                    type: string
+                    minLength: 1
+                description:
+                    type: string
+                    minLength: 1
+                status:
+                    $ref: "#/components/schemas/TaskStatus"
+                    default: pending

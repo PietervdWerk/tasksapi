@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/deepmap/oapi-codegen/HEAD/configuration-schema.json
+package: openapi3
+generate:
+    models: true
+output: ../pkg/openapi3/task_types.gen.go

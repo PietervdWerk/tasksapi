@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/deepmap/oapi-codegen/HEAD/configuration-schema.json
+package: api
+generate:
+    chi-server: true
+    strict-server: true
+    embedded-spec: true
+output: ../internal/api/api.gen.go
+additional-imports:
+    - alias: .
+      package: github.com/pietervdwerk/tasksapi/pkg/openapi3

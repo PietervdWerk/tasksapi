@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sqlc-dev/sqlc/main/internal/config/v_two.json
+version: "2"
+sql:
+    - engine: "sqlite"
+      queries: "../internal/tasks/queries.sql"
+      schema: "../internal/tasks/schema.sql"
+      gen:
+          go:
+              package: "tasks"
+              out: "../internal/tasks"
+              emit_json_tags: true
+              emit_prepared_queries: true
+              emit_interface: true
+              emit_exact_table_names: false
+              emit_pointers_for_null_types: true
+              overrides:
+                  - column: "tasks.id"
+                    go_type:
+                        type: UUID
+                        import: github.com/google/uuid
+                  - column: "tasks.status"
+                    go_type:
+                        type: TaskStatus
+                        import: github.com/pietervdwerk/tasksapi/pkg/openapi3
+                  - column: "users.id"
+                    go_type:
+                        type: UUID
+                        import: github.com/google/uuid
+    - engine: "sqlite"
+      queries: "../internal/clients/queries.sql"
+      schema: "../internal/clients/schema.sql"
+      gen:
+          go:
+              package: "clients"
+              out: "../internal/clients"
+              emit_json_tags: true
+              emit_prepared_queries: true
+              emit_interface: true
+              emit_exact_table_names: false
+              emit_pointers_for_null_types: true
+              overrides:
+                  - column: "clients.id"
+                    go_type:
+                        type: UUID
+                        import: github.com/google/uuid
